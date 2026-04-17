@@ -1,0 +1,1636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CN-Hospital Assist - Healthcare for Foreigners in China</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- GSAP for animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollTrigger.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        },
+                        secondary: {
+                            50: '#f8fafc',
+                            100: '#f1f5f9',
+                            200: '#e2e8f0',
+                            300: '#cbd5e1',
+                            400: '#94a3b8',
+                            500: '#64748b',
+                            600: '#475569',
+                            700: '#334155',
+                            800: '#1e293b',
+                            900: '#0f172a',
+                        },
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                },
+            },
+        };
+    </script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .hero-gradient {
+            background: linear-gradient(135deg, #0c4a6e 0%, #0ea5e9 100%);
+        }
+        
+        .service-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .service-icon {
+            transition: all 0.3s ease;
+        }
+        
+        .service-card:hover .service-icon {
+            transform: scale(1.1);
+        }
+        
+        .chat-message {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+        
+        .chat-message.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .doctor-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .booking-step {
+            transition: all 0.3s ease;
+        }
+        
+        .booking-step.active {
+            border-color: #0ea5e9;
+            background-color: #f0f9ff;
+        }
+        
+        .booking-step.completed {
+            background-color: #0ea5e9;
+            color: white;
+        }
+        
+        .booking-step.completed .step-number {
+            background-color: white;
+            color: #0ea5e9;
+        }
+        
+        .step-number {
+            transition: all 0.3s ease;
+        }
+        
+        .booking-step.active .step-number {
+            background-color: #0ea5e9;
+            color: white;
+        }
+        
+        /* 3D Globe Animation Container */
+        #globe-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.2;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #94a3b8;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+        
+        /* Mobile Menu */
+        .mobile-menu {
+            transform: translateX(-100%);
+            transition: transform 0.3s ease-in-out;
+        }
+        
+        .mobile-menu.open {
+            transform: translateX(0);
+        }
+        
+        /* Loading Animation */
+        .loading-dots span {
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+        
+        .loading-dots span:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+        
+        .loading-dots span:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+        
+        @keyframes bounce {
+            0%, 80%, 100% {
+                transform: scale(0);
+            }
+            40% {
+                transform: scale(1);
+            }
+        }
+        
+        /* Typing Effect */
+        .typing::after {
+            content: '|';
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0;
+            }
+        }
+        
+        /* Animations */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* AI Chat Container */
+        .chat-container {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        /* Custom Select Styling */
+        .custom-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.5rem center;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-secondary-800">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-md fixed w-full z-50">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <!-- Logo -->
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-heartbeat text-primary-600 text-2xl"></i>
+                    <span class="text-xl font-bold text-primary-700">Cn-Hospital</span>
+                </div>
+                
+                <!-- Desktop Navigation -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#home" class="text-secondary-600 hover:text-primary-600 transition-colors">Home</a>
+                    <a href="#services" class="text-secondary-600 hover:text-primary-600 transition-colors">Services</a>
+                    <a href="#="#how-it-works" class="text-secondary-600 hover:text-primary-600 transition-colors">How It Works</a>
+                    <a href="#doctors" class="text-secondary-600 hover:text-primary-600 transition-colors">Our Doctors</a>
+                    <a href="#ai-assistant" class="text-secondary-600 hover:text-primary-600 transition-colors">AI Assistant</a>
+                    <a href="#contact" class="text-secondary-600 hover:text-primary-600 transition-colors">Contact</a>
+                </div>
+                
+                <!-- Language Selector -->
+                <div class="hidden md:flex items-center space-x-4">
+                    <select class="bg-gray-100 border border-gray-300 text-secondary-700 py-1 px-3 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
+                        <option value="en">English</option>
+                        <option value="zh">中文</option>
+                        <option value="ja">日本語</option>
+                        <option value="ko">한국어</option>
+                        <option value="es">Español</option>
+                    </select>
+                    <button class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-md transition-colors">
+                        Book Now
+                    </button>
+                </div>
+                
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden">
+                    <button id="mobile-menu-button" class="text-secondary-600 hover:text-primary-600">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Mobile Navigation -->
+            <div id="mobile-menu" class="mobile-menu fixed top-0 left-0 h-full w-3/4 bg-white shadow-50 z-50 shadow-lg p-5">
+                <div class="flex justify-between items-center mb-8">
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-heartbeat text-primary-600 text-2xl"></i>
+                        <span class="text-xl font-bold text-primary-700">GlobalMedAssist</span>
+                    </div>
+                    <button id="close-menu" class="text-secondary-600 hover:text-primary-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                <div class="flex flex-col space-y-4">
+                    <a href="#home" class="text-secondary-600 hover:text-primary-600 transition-colors py-2 border-b border-gray-100">Home</a>
+                    <a href="#services" class="text-secondary-600 hover:text-primary-600 transition-colors py-2 border-b border-gray-100">Services</a>
+                    <a href="#how-it-works" class="text-secondary-600 hover:text-primary-600 transition-colors py-2 border-b border-gray-100">How It Works</a>
+                    <a href="#doctors" class="text-secondary-600 hover:text-primary-600 transition-colors py-2 border-b border-gray-100">Our Doctors</a>
+                    <a href="#ai-assistant" class="text-secondary-600 hover:text-primary-600 transition-colors py-2 border-b border-gray-100">AI Assistant</a>
+                    <a href="#contact" class="text-secondary-600 hover:text-primary-600 transition-colors py-2 border-b border-gray-100">Contact</a>
+                </div>
+                <div class="mt-6">
+                    <select class="w-full bg-gray-100 border border-gray-300 text-secondary-700 py-2 px-3 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
+                        <option value="en">English</option>
+                        <option value="zh">中文</option>
+                        <option value="ja">日本語</option>
+                        <option value="ko">한국어</option>
+                        <option value="es">Español</option>
+                    </select>
+                    <button class="w-full mt-4 bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-md transition-colors">
+                        Book Now
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero-gradient text-white min-h-screen flex items-center relative overflow-hidden">
+        <!-- 3D Globe Background -->
+        <div id="globe-container"></div>
+        
+        <div class="containerainer mx-auto px-4 py-20 relative z-10">
+            <div class="flex flex-cols-1 lg:flex-row items-center">
+                <div class="lg:w-1/2 mb-10 lg:mb-0">
+                    <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+                        Three Major Advantages  <br>
+                        <span class="text-primary-200"> of Seeking Medical</span><br><span class="text-primary-200"> Treatment in China:</span>
+                    </h1>
+                    <p class="text-lg md:text-xl mb-8 text-blue-100 max-w-lg">
+                       🏥 See a Top Doctor in Just 1 Week.<br>
+💰 Medical Costs are Only 1% of Those in the US and Europe.<br>
+👩⚕ Access to Highly Skilled Doctors Tested by a population of 1.4 Billion Chinese.
+                    </p>
+                   
+                </div>
+                <div class="lg:w-1/2 flex justify-center">
+                    <img src="https://cn-hospital.liveblog365.com/abc.png" 
+                         alt="Medical team assisting foreign patients" 
+                         class="rounded-lg shadow-2xl max-w-full h-auto transform hover:scale-105 transition-transform duration-500">
+                </div>
+            </div>
+            
+            <!-- Trusted By -->
+            <div class="mt-20">
+                <p class="text-center text-blue-100 mb-6">Trusted by International Communities</p>
+                <div class="flex flex-wrap justify-center items-center gap-8 md:gap-16">
+                    <div class="text-blue-200 hover:text-white transition-colors">
+                        <i class="fab fa-usembassy text-3xl"></i>
+                        <p class="mt-2 text-sm">U.S. Embassy</p>
+                    </div>
+                    <div class="text-blue-200 hover:text-white transition-colors">
+                        <i class="fab fa-britain text-3xl"></i>
+                        <p class="mt-2 text-sm">UK Consulate</p>
+                    </div>
+                    <div class="text-blue-200 hover:text-white transition-colors">
+                        <i class="fab fa-japan text-3xl"></i>
+                        <p class="mt-2 text-sm">Japan Embassy</p>
+                    </div>
+                    <div class="text-blue-200 hover:text-white transition-colors">
+                        <i class="fab fa-canada text-3xl"></i>
+                        <p class="mt-2 text-sm">Canada Embassy</p>
+                    </div>
+                    <div class="text-blue-200 hover:text-white transition-colors">
+                        <i class="fab fa-australia text-3xl"></i>
+                        <p class="mt-2 text-sm">Australia Embassy</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Wave Divider -->
+        <div class="absolute bottom-0 left-0 w-full overflow-hidden">
+            <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none" class="w-full h-16 md:h-24">
+                <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" class="fill-gray-50"></path>
+            </svg>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services" class="py-20 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Our Comprehensive Services</h2>
+                <p class="text-secondary-600 max-w-2xl mx-auto">We provide end-to-end medical assistance tailored specifically for foreigners in China, ensuring a smooth and stress-free experience.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Service 1: Airport Pickup -->
+                <div class="service-card bg-white rounded-xl shadow-lg p-6 transition-all duration-300">
+                    <div class="bg-primary-50 w-16 h-16 rounded-full flex items-center justify-center mb-6">
+                        <i class="fas fa-plane-arrival text-primary-600 text-2xl service-icon"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Airport Pickup & Transportation</h3>
+                    <p class="text-secondary-600 mb-4">We provide convenient airport pickup and transportation to your hotel or medical facility, ensuring a smooth arrival experience.</p>
+                    <ul class="space-y-2 mb-6">
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-2"></i>
+                            <span>English-speaking drivers</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-2"></i>
+                            <span>Comfortable vehicles</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-2"></i>
+                            <span>24/7 availability</span>
+                        </li>
+                    </ul>
+                    <button class="text-primary-600 hover:text-primary-700 font-medium flex items-center">
+                        Learn More <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+                
+                <!-- Service 2: Medical Translation -->
+                <div class="service-card bg-white rounded-xl shadow-lg p-6 transition-all duration-300">
+                    <div class="bg-primary-50 w-16 h-16 rounded-full flex items-center justify-center mb-6">
+                        <i class="fas fa-language text-primary-600 text-2xl service-icon"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Medical Translation Services</h3>
+                    <p class="text-secondary-600 mb-4">Our professional translators specialize in medical terminology, ensuring accurate communication between you and healthcare providers.</p>
+                    <ul class="space-y-2 mb-6">
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-2"></i>
+                            <span>Certified medical translators</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-2"></i>
+                            <span>Document translation</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-2"></i>
+                            <span>Real-time interpretation</span>
+                        </li>
+                    </ul>
+                    <button class="text-primary-600 hover:text-primary-700 font-medium flex items-center">
+                        Learn More <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+                
+                <!-- Service 3: Medical Escort -->
+                <div class="service-card bg-white rounded-xl shadow-lg p-6 transition-all duration-300">
+                    <div class="bg-primary-50 w-16 h-16 rounded-full flex items-center justify-center mb-6">
+                        <i class="fas fa-user-md text-primary-600 text-2xl service-icon"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Medical Escort & Assistance</h3>
+                    <p class="text-secondary-600 mb-4">Our team provides Full accompaniment during medical visits: assist you in navigating China's medical system, and handle appointment bookings and communication matters.</p>
+                    <ul class="space-y-2 mb-6">
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-2"></i>
+                            <span>Full accompaniment for medical visits</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-2"></i>
+                            <span>Appointment Management</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-2"></i>
+                            <span>Medical Advice Consultation</span>
+                        </li>
+                    </ul>
+                    <button class="text-primary-600 hover:text-primary-700 font-medium flex items-center">
+                        Learn More <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+                
+                <!-- Service 4: Doctor Appointment -->
+                <div class="service-card bg-white rounded-xl shadow-lg p-6 transition-all duration-300">
+                    <div class="bg-primary-50 w-16 h-16 rounded-full flex items-center justify-center mb-6">
+                        <i class="fas fa-calendar-check text-primary-600 text-2xl service-icon"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Doctor Appointment Booking</h3>
+                    <p class="text-secondary-600 mb-4">We help you find and book appointments with English-speaking doctors and specialists across China.</p>
+                    <ul class="space-y-2 mb-6">
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-2"></i>
+                            <span>Access to English-speaking doctors</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-2"></i>
+                            <span>Specialist referrals</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-2"></i>
+                            <span>Appointment management</span>
+                        </li>
+                    </ul>
+                    <button class="text-primary-600 hover:text-primary-700 font-medium flex items-center">
+                        Learn More <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+                
+                <!-- Service 5: Hotel Booking -->
+                <div class="service-card bg-white rounded-xl shadow-lg p-6 transition-all duration-300">
+                    <div class="bg-primary-50 w-16 h-16 rounded-full flex items-center justify-center mb-6">
+                        <i class="fas fa-hotel text-primary-600 text-2xl service-icon"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Hospitality Services</h3>
+                    <p class="text-secondary-600 mb-4">We arrange comfortable accommodation near medical facilities, ensuring convenience during your treatment.</p>
+                    <ul class="space-y-2 mb-6">
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-2"></i>
+                            <span>Hotel booking near hospitals</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-2"></i>
+                            <span>Airport-hotel transfers</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-2"></i>
+                            <span>Local amenities information</span>
+                        </li>
+                    </ul>
+                    <button class="text-primary-600 hover:text-primary-700 font-medium flex items-center">
+                        Learn More <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+                
+                <!-- Service 6: AI Translation -->
+                <div class="service-card bg-white rounded-xl shadow-lg p-6 transition-all duration-300">
+                    <div class="bg-primary-50 w-16 h-16 rounded-full flex items-center justify-center mb-6">
+                        <i class="fas fa-robot text-primary-600 text-2xl service-icon"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">AI Medical Translation Assistant</h3>
+                    <p class="text-secondary-600 mb-4">Our AI-powered translation tool helps you communicate effectively with medical staff using your smartphone.</p>
+                    <ul class="space-y-2 mb-6">
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-2"></i>
+                            <span>Real-time medical translation</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-2"></i>
+                            <span>Medical terminology database</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-500 mr-2"></i>
+                            <span>Available 24/7</span>
+                        </li>
+                    </ul>
+                    <button class="text-primary-600 hover:text-primary-700 font-medium flex items-center">
+                        Learn More <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="py-20 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">How Our Service Works</h2>
+                <p class="text-secondary-600 max-w-2xl mx-auto">We've streamlined our process to make your medical journey in China as smooth as possible.</p>
+            </div>
+            
+          
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- Step 1 -->
+                 <div class="bg-white rounded-xl shadow-md p-6 text-center relative">
+    <!-- 图片容器 -->
+    <div class="overflow-hidden rounded-t-xl">
+      <img src="https://cn-hospital.liveblog365.com/01.png" alt="Step 1" class="w-full h-48 object-cover">
+    </div>
+    <!-- 原有内容 -->
+    <div class="bg-primary-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mt-[-32px] mb-6 relative z-10">
+      <span class="text-primary-600 font-bold text-xl">01</span>
+    </div>
+    <h3 class="text-xl font-semibold mb-3"></h3>
+    <p class="text-secondary-600">Communicate with customer service about your condition</p>
+  </div>
+                
+                 <!-- Step 2-->
+                 <div class="bg-white rounded-xl shadow-md p-6 text-center relative">
+    <!-- 图片容器 -->
+    <div class="overflow-hidden rounded-t-xl">
+      <img src="https://cn-hospital.liveblog365.com/02.png" alt="Step 2" class="w-full h-48 object-cover">
+    </div>
+    <!-- 原有内容 -->
+    <div class="bg-primary-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mt-[-32px] mb-6 relative z-10">
+      <span class="text-primary-600 font-bold text-xl">02</span>
+    </div>
+    <h3 class="text-xl font-semibold mb-3"></h3>
+    <p class="text-secondary-600">Customer service staff make appointments with doctors at Chinese public hospitals in advance</p>
+  </div>
+                
+                <!-- Step 3 -->
+                <div class="bg-white rounded-xl shadow-md p-6 text-center relative">
+    <!-- 图片容器 -->
+    <div class="overflow-hidden rounded-t-xl">
+      <img src="https://cn-hospital.liveblog365.com/03.png" alt="Step3" class="w-full h-48 object-cover">
+    </div>
+    <!-- 原有内容 -->
+    <div class="bg-primary-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mt-[-32px] mb-6 relative z-10">
+      <span class="text-primary-600 font-bold text-xl">03</span>
+    </div>
+    <h3 class="text-xl font-semibold mb-3"></h3>
+    <p class="text-secondary-600">Patient flies to China..</p>
+  </div>
+                
+                <!-- Step 4 -->
+                <div class="bg-white rounded-xl shadow-md p-6 text-center relative">
+    <!-- 图片容器 -->
+    <div class="overflow-hidden rounded-t-xl">
+      <img src="https://cn-hospital.liveblog365.com/04.png" alt="Step 4" class="w-full h-48 object-cover">
+    </div>
+    <!-- 原有内容 -->
+    <div class="bg-primary-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mt-[-32px] mb-6 relative z-10">
+      <span class="text-primary-600 font-bold text-xl">04</span>
+    </div>
+    <h3 class="text-xl font-semibold mb-3"></h3>
+    <p class="text-secondary-600">CN Hospital staff greeted patients at the airport</p>
+  </div>
+                                 <!-- Step 5 -->
+                <div class="bg-white rounded-xl shadow-md p-6 text-center relative">
+    <!-- 图片容器 -->
+    <div class="overflow-hidden rounded-t-xl">
+      <img src="https://cn-hospital.liveblog365.com/05.png" alt="Step 5" class="w-full h-48 object-cover">
+    </div>
+    <!-- 原有内容 -->
+    <div class="bg-primary-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mt-[-32px] mb-6 relative z-10">
+      <span class="text-primary-600 font-bold text-xl">05</span>
+    </div>
+    <h3 class="text-xl font-semibold mb-3"></h3>
+    <p class="text-secondary-600">CN Hospital staff arranges shuttle buses</p>
+  </div>
+                                 
+                                 <!-- Step 6 -->
+                <div class="bg-white rounded-xl shadow-md p-6 text-center relative">
+    <!-- 图片容器 -->
+    <div class="overflow-hidden rounded-t-xl">
+      <img src="https://cn-hospital.liveblog365.com/06.png" alt="Step 6" class="w-full h-48 object-cover">
+    </div>
+    <!-- 原有内容 -->
+    <div class="bg-primary-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mt-[-32px] mb-6 relative z-10">
+      <span class="text-primary-600 font-bold text-xl">06</span>
+    </div>
+    <h3 class="text-xl font-semibold mb-3"></h3>
+    <p class="text-secondary-600">cnhospital staff arranged hotel accommodation</p>
+  </div>
+                                 
+                                 <!-- Step 7 -->
+                <div class="bg-white rounded-xl shadow-md p-6 text-center relative">
+    <!-- 图片容器 -->
+    <div class="overflow-hidden rounded-t-xl">
+      <img src="https://cn-hospital.liveblog365.com/07.png" alt="Step 7" class="w-full h-48 object-cover">
+    </div>
+    <!-- 原有内容 -->
+    <div class="bg-primary-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mt-[-32px] mb-6 relative z-10">
+      <span class="text-primary-600 font-bold text-xl">07</span>
+    </div>
+    <h3 class="text-xl font-semibold mb-3"></h3>
+    <p class="text-secondary-600">Staff accompanying service on the second day</p>
+  </div>
+                                   <!-- Step 8 -->
+                <div class="bg-white rounded-xl shadow-md p-6 text-center relative">
+    <!-- 图片容器 -->
+    <div class="overflow-hidden rounded-t-xl">
+      <img src="https://cn-hospital.liveblog365.com/08.png" alt="Step 8" class="w-full h-48 object-cover">
+    </div>
+    <!-- 原有内容 -->
+    <div class="bg-primary-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mt-[-32px] mb-6 relative z-10">
+      <span class="text-primary-600 font-bold text-xl">08</span>
+    </div>
+    <h3 class="text-xl font-semibold mb-3"></h3>
+    <p class="text-secondary-600">Staff accompany patients to get treatment number</p>
+  </div>
+                                      <!-- Step 9 -->
+                <div class="bg-white rounded-xl shadow-md p-6 text-center relative">
+    <!-- 图片容器 -->
+    <div class="overflow-hidden rounded-t-xl">
+      <img src="https://cn-hospital.liveblog365.com/09.png" alt="Step 9" class="w-full h-48 object-cover">
+    </div>
+    <!-- 原有内容 -->
+    <div class="bg-primary-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mt-[-32px] mb-6 relative z-10">
+      <span class="text-primary-600 font-bold text-xl">09</span>
+    </div>
+    <h3 class="text-xl font-semibold mb-3"></h3>
+    <p class="text-secondary-600">Staff assisting patients with X-rays</p>
+  </div>
+                                      <!-- Step 10 -->
+                <div class="bg-white rounded-xl shadow-md p-6 text-center relative">
+    <!-- 图片容器 -->
+    <div class="overflow-hidden rounded-t-xl">
+      <img src="https://cn-hospital.liveblog365.com/10.png" alt="Step 10" class="w-full h-48 object-cover">
+    </div>
+    <!-- 原有内容 -->
+    <div class="bg-primary-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mt-[-32px] mb-6 relative z-10">
+      <span class="text-primary-600 font-bold text-xl">10</span>
+    </div>
+    <h3 class="text-xl font-semibold mb-3"></h3>
+    <p class="text-secondary-600">Staff assisting patients with blood tests</p>
+  </div>
+                                      <!-- Step 11 -->
+                <div class="bg-white rounded-xl shadow-md p-6 text-center relative">
+    <!-- 图片容器 -->
+    <div class="overflow-hidden rounded-t-xl">
+      <img src="https://cn-hospital.liveblog365.com/11.png" alt="Step 11" class="w-full h-48 object-cover">
+    </div>
+    <!-- 原有内容 -->
+    <div class="bg-primary-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mt-[-32px] mb-6 relative z-10">
+      <span class="text-primary-600 font-bold text-xl">11</span>
+    </div>
+    <h3 class="text-xl font-semibold mb-3"></h3>
+    <p class="text-secondary-600">Staff Assisted Inpatient Care Services</p>
+  </div>
+                                      <!-- Step 12 -->
+                <div class="bg-white rounded-xl shadow-md p-6 text-center relative">
+    <!-- 图片容器 -->
+    <div class="overflow-hidden rounded-t-xl">
+      <img src="https://cn-hospital.liveblog365.com/12.png" alt="Step 12" class="w-full h-48 object-cover">
+    </div>
+    <!-- 原有内容 -->
+    <div class="bg-primary-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mt-[-32px] mb-6 relative z-10">
+      <span class="text-primary-600 font-bold text-xl">12</span>
+    </div>
+    <h3 class="text-xl font-semibold mb-3"></h3>
+    <p class="text-secondary-600">Staff assist patients with MRI examination services</p>
+  </div>
+                                      <!-- Step 13 -->
+                <div class="bg-white rounded-xl shadow-md p-6 text-center relative">
+    <!-- 图片容器 -->
+    <div class="overflow-hidden rounded-t-xl">
+      <img src="https://cn-hospital.liveblog365.com/13.png" alt="Step 13" class="w-full h-48 object-cover">
+    </div>
+    <!-- 原有内容 -->
+    <div class="bg-primary-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mt-[-32px] mb-6 relative z-10">
+      <span class="text-primary-600 font-bold text-xl">13</span>
+    </div>
+    <h3 class="text-xl font-semibold mb-3"></h3>
+    <p class="text-secondary-600">Staff wait for the patient to finish the operation.</p>
+  </div>
+                                      <!-- Step 14 -->
+                <div class="bg-white rounded-xl shadow-md p-6 text-center relative">
+    <!-- 图片容器 -->
+    <div class="overflow-hidden rounded-t-xl">
+      <img src="https://cn-hospital.liveblog365.com/14.png" alt="Step 14" class="w-full h-48 object-cover">
+    </div>
+    <!-- 原有内容 -->
+    <div class="bg-primary-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mt-[-32px] mb-6 relative z-10">
+      <span class="text-primary-600 font-bold text-xl">14</span>
+    </div>
+    <h3 class="text-xl font-semibold mb-3"></h3>
+    <p class="text-secondary-600">Staff accompanied patients for a walk in the park for recuperation.</p>
+  </div>
+                                      <!-- Step 15 -->
+                <div class="bg-white rounded-xl shadow-md p-6 text-center relative">
+    <!-- 图片容器 -->
+    <div class="overflow-hidden rounded-t-xl">
+      <img src="https://cn-hospital.liveblog365.com/15.png" alt="Step 15" class="w-full h-48 object-cover">
+    </div>
+    <!-- 原有内容 -->
+    <div class="bg-primary-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mt-[-32px] mb-6 relative z-10">
+      <span class="text-primary-600 font-bold text-xl">15</span>
+    </div>
+    <h3 class="text-xl font-semibold mb-3"></h3>
+    <p class="text-secondary-600">The patient recovered and was discharged</p>
+  </div>
+                                      <!-- Step 16 -->
+                <div class="bg-white rounded-xl shadow-md p-6 text-center relative">
+    <!-- 图片容器 -->
+    <div class="overflow-hidden rounded-t-xl">
+      <img src="https://cn-hospital.liveblog365.com/16.png" alt="Step 16" class="w-full h-48 object-cover">
+    </div>
+    <!-- 原有内容 -->
+    <div class="bg-primary-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mt-[-32px] mb-6 relative z-10">
+      <span class="text-primary-600 font-bold text-xl">16</span>
+    </div>
+    <h3 class="text-xl font-semibold mb-3"></h3>
+    <p class="text-secondary-600">The staff sent the patient to the airport, and the patient returned to the airport</p>
+  </div>
+            </div>
+            
+           
+    <!-- Our Hospital Section -->
+    <section id="doctors" class="py-20 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Top hospitals in China</h2>
+                <p class="text-secondary-600 max-w-2xl mx-auto">China Public Hospital</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Hospital 1 -->
+                <div class="doctor-card bg-white rounded-xl shadow-lg overflow-hidden transition-all duration-300">
+                    <div class="relative">
+                        <img src="https://cn-hospital.liveblog365.com/H001.png" 
+                             alt="Union Medical College" 
+                             class="w-full h-64 object-cover">
+                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
+                            <h3 class="text-white text-xl font-semibold">PUMCH</h3>
+                            <p class="text-blue-100">Union Medical College</p>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="flex text-yellow-400">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <span class="ml-2 text-secondary-600">Grade A Class 3 hospital</span>
+                        </div>
+                        <p class="text-secondary-600 mb-4">Peking Union Medical College Hospital (PUMCH) is a top-tier comprehensive hospital in China, with a history dating back over a century. It integrates medical treatment, teaching, and scientific research, and is renowned for its expertise in tackling complex and difficult diseases.
+PUMCH houses a large team of senior medical experts and advanced medical equipment, providing high-quality healthcare services to both domestic and international patients. It also plays a leading role in medical education and clinical research, contributing significantly to the development of China’s medical industry.</p>
+                        <div class="flex flex-wrap gap-2 mb-6">
+                            <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">Cardiology</span>
+                            <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">English</span>
+                            <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">Mandarin</span>
+                        </div>
+                       
+                    </div>
+                </div>
+                
+                <!-- Hospital 2 -->
+                <div class="Hospital-card bg-white rounded-xl shadow-lg overflow-hidden transition-all duration-300">
+                    <div class="relative">
+                        <img src="https://cn-hospital.liveblog365.com/H002.jpg" 
+                             alt="Zhongshan Medical College" 
+                             class="w-full h-64 object-cover">
+                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
+                            <h3 class="text-white text-xl font-semibold">The First Affiliated Hospital of Sun Yat-sen University</h3>
+                            <p class="text-blue-100">Zhongshan Medical College</p>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="flex text-yellow-400">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star-half-alt"></i>
+                            </div>
+                            <span class="ml-2 text-secondary-600">Grade A Class 3 hospital</span>
+                        </div>
+                        <p class="text-secondary-600 mb-4">The First Affiliated Hospital of Sun Yat-sen University (FAH-SYSU), also known as "Zhongshan First Hospital", is a large 3A hospital with its headquarters located in Yuexiu District of Guangzhou. Founded in 1910, it is one of the oldest and most well-known comprehensive hospitals in South China. The hospital is affiliated to Sun Yat-sen University and is directly managed by the National Health Commission. It is well known for its excellent service in China and Southeast Asia.The headquarters, also called Yuexiu Division, is located at No. 58, Zhongshan 2nd Road, Yuexiu District, Guangzhou.                                                                                      </p>
+                        <div class="flex flex-wrap gap-2 mb-6">
+                            <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">General Medicine</span>
+                            <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">English</span>
+                            <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">Mandarin</span>
+                            <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">Japanese</span>
+                        </div>
+                        
+                    </div>
+                </div>
+                
+                <!-- Hospital 3 -->
+                <div class="Hospital-card bg-white rounded-xl shadow-lg overflow-hidden transition-all duration-300">
+                    <div class="relative">
+                        <img src="https://cn-hospital.liveblog365.com/H003.png" 
+                             alt="Jinan University" 
+                             class="w-full h-64 object-cover">
+                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
+                            <h3 class="text-white text-xl font-semibold">The Third People's Hospital of Shenzhen</h3>
+                            <p class="text-blue-100">Jinan University</p>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="flex text-yellow-400">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <span class="ml-2 text-secondary-600">Grade A Class 3 hospital</span>
+                        </div>
+                        <p class="text-secondary-600 mb-4">Shenzhen People's Hospital (also known as the Second Clinical Medical College of Jinan University and the First Affiliated Hospital of Southern University of Science and Technology). Founded in 1946, it is a public hospital in Shenzhen and a national Grade A tertiary hospital. It was renamed in 1979. It serves as a non-affiliated hospital of Jinan University and a directly affiliated hospital of Southern University of Science and Technology.
+
+It currently has four campuses: the First Outpatient Department, the Inpatient Department and the Second Outpatient Department , the Longhua Branch, and the Bantian Campus.</p>
+                        <div class="flex flex-wrap gap-2 mb-6">
+                            <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">Neurology</span>
+                            <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">English</span>
+                            <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">Mandarin</span>
+                        </div>
+                       
+                    </div>
+                </div>
+                                                                                                                                <!-- Doctor 3 -->
+                <div class="doctor-card bg-white rounded-xl shadow-lg overflow-hidden transition-all duration-300">
+                    <div class="relative">
+                        <img src="https://cn-hospital.liveblog365.com/H004.png" 
+                             alt="Southern University of Science and Technology" 
+                             class="w-full h-64 object-cover">
+                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
+                            <h3 class="text-white text-xl font-semibold">The Third People's Hospital of Shenzhen</h3>
+                            <p class="text-blue-100">Southern University of Science and Technology</p>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="flex text-yellow-400">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <span class="ml-2 text-secondary-600">Grade A Class 3 hospital</span>
+                        </div>
+                        <p class="text-secondary-600 mb-4">Shenzhen Third People's Hospital (a Class A tertiary research hospital administered by the Shenzhen Municipal People's Government and a designated Shenzhen Medical Insurance hospital) is located at 29 Bujibulan Road, Longgang District, Shenzhen. The current president is Lu Hongzhou.
+
+In 1985, Shenzhen Third People's Hospital's predecessor, Shenzhen Donghu Hospital, opened. In 1996, the Shenzhen Institute of Liver Diseases was established. In 2000, the hospital's renovation and expansion project was approved. In February 2003, it became the designated hospital for the treatment of SARS in Shenzhen. In January 2004, it was renamed "Shenzhen Third People's Hospital" and relocated to 29 Bulan Road, Longgang District. In 2008, the hospital was designated the Shenzhen Branch Laboratory of the State Key Laboratory of Emerging Infectious Diseases of the University of Hong Kong.</p>
+                        <div class="flex flex-wrap gap-2 mb-6">
+                            <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">Neurology</span>
+                            <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">English</span>
+                            <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">Mandarin</span>
+                        </div>
+                        
+                    </div>
+                </div>
+                               <!-- DoctorHospital 3 -->
+                <div class="Hospital-card bg-white rounded-xl shadow-lg overflow-hidden transition-all duration-300">
+                    <div class="relative">
+                        <img src="https://cn-hospital.liveblog365.com/H005.jpg" 
+                             alt="Shanghai Jiao Tong University" 
+                             class="w-full h-64 object-cover">
+                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
+                            <h3 class="text-white text-xl font-semibold">Shanghai Renji Hospital</h3>
+                            <p class="text-blue-100">Shanghai Jiao Tong University</p>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="flex text-yellow-400">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <span class="ml-2 text-secondary-600">Grade A Class 3 hospital</span>
+                        </div>
+                        <p class="text-secondary-600 mb-4">Renji Hospital, founded in 1844, was the first Western medicine hospital established in Shanghai after the opening of the port. Currently comprised of four campuses (East, West, South, and North) and the Shanghai Cancer Research Institute, the hospital is a comprehensive, Class-A tertiary hospital offering a comprehensive range of medical services, teaching, and research. The hospital has been awarded the title of National Civilized Unit for four consecutive years and has received an A grade in the annual performance appraisal of the president of the Shanghai Shenkang Hospital Development Center for 18 consecutive years.
+
+The East Campus, located in the Lujiazui Financial and Trade Zone in Pudong, opened in October 1999. The West Campus, located in the Huangpu Central Business District, is adjacent to the Bund. The South Campus, located in Pujiang Town, Minhang District, opened in December 2012 .</p>
+                        <div class="flex flex-wrap gap-2 mb-6">
+                            <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">Neurology</span>
+                            <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">English</span>
+                            <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">Mandarin</span>
+                        </div>
+                        
+                    </div>
+                </div>
+                                                                                                                                <!-- Doctor 3 -->
+                <div class="doctor-card bg-white rounded-xl shadow-lg overflow-hidden transition-all duration-300">
+                    <div class="relative">
+                        <img src="https://cn-hospital.liveblog365.com/H006.jpg" 
+                             alt="Guangdong Academy of Medical Sciences" 
+                             class="w-full h-64 object-cover">
+                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
+                            <h3 class="text-white text-xl font-semibold">Guangdong Provincial People's Hospital</h3>
+                            <p class="text-blue-100">Guangdong Academy of Medical Sciences</p>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="flex text-yellow-400">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <span class="ml-2 text-secondary-600">Grade A Class 3 hospital</span>
+                        </div>
+                        <p >Guangdong Provincial People's Hospital is a large, modern, Class-A tertiary comprehensive hospital integrating medical care, teaching, and research. Its medical services are based in South China and radiate throughout the country, with key medical indicators ranking among the best in the country. It currently has 13 national key clinical specialties and 32 Guangdong Provincial key clinical medicine specialties, specializing in the multidisciplinary diagnosis and treatment of difficult and critical illnesses. In the five years ending in 2023, it has introduced 326 new medical technologies, completed the registration of 9 national and 62 provincial restricted clinical application technologies, including artificial intelligence-assisted treatment technology, and completed 35.78% of Level 4 surgeries. It currently has six outpatient clinics, six research institutes, six medical centers, and the Guangdong Bone Marrow Bank, among other clinical, teaching, and research institutions.
+</p>
+                        <div class="flex flex-wrap gap-2 mb-6">
+                            <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">Neurology</span>
+                            <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">English</span>
+                            <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">Mandarin</span>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+                                                                                                                               
+                                                                                                                               
+            
+            <div class="text-center mt-12">
+              
+            </div>
+        </div>
+                                                                       
+         
+    </section>
+
+    <!-- AI Assistant Section -->
+    <section id="ai-assistant" class="py-20 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">AI Medical Translation Assistant</h2>
+                <p class="text-secondary-600 max-w-2xl mx-auto">Our AI-powered assistant helps you communicate effectively with medical staff, translating complex medical terminology in real-time.</p>
+            </div>
+            
+            <div class="flex flex-col lg:flex-row items-center gap-12">
+                <div class="lg:w-1/2">
+                    <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/036a745017274860be8fd500e435eb24~tplv-a9rns2rl98-image.image?rcl=202510200121145DD7904C7C4AE5ED5F44&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1763486504&x-signature=WvXRWxa68tgLfw9Z%2F%2B22W3aOOsQ%3D" 
+                         alt="AI Medical Translation Assistant" 
+                         class="rounded-lg shadow-xl max-w-full h-auto">
+                </div>
+                
+                <div class="lg:w-1/2">
+                    <h3 class="text-2xl font-semibold mb-6">Real-Time Medical Translation</h3>
+                    <p class="text-secondary-600 mb-8">Our AI assistant is specifically trained on medical terminology, ensuring accurate translations between English, Chinese, and other languages.</p>
+                    
+                    <div class="space-y-6 mb-8">
+                        <div class="flex items-start">
+                            <div class="bg-primary-100 w-10 h-10 rounded-full flex items-center justify-center mr-4 mt-1">
+                                <i class="fas fa-language text-primary-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">Multi-Language Support</h4>
+                                <p class="text-secondary-600">Supports English, Chinese, Japanese, Korean, Spanish, and more.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start">
+                            <div class="bg-primary-100 w-10 h-10 rounded-full flex items-center justify-center mr-4 mt-1">
+                                <i class="fas fa-stethoscope text-primary-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">Medical Terminology Database</h4>
+                                <p class="text-secondary-600">Specialized in translating complex medical terms accurately.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start">
+                            <div class="bg-primary-100 w-10 h-10 rounded-full flex items-center justify-center mr-4 mt-1">
+                                <i class="fas fa-mobile-alt text-primary-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">Mobile-Friendly</h4>
+                                <p class="text-secondary-600">Use our app or web interface on your smartphone during medical visits.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- AI Chat Demo -->
+                    <div class="bg-white rounded-xl shadow-lg p-4 mb-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="font-medium">Try Our AI Assistant</h4>
+                            <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">AI Powered</span>
+                        </div>
+                        
+                        <div class="chat-container bg-gray-50 rounded-lg p-4 mb-4 h-64 overflow-y-auto">
+                            <div class="chat-message show flex mb-4">
+                                <div class="bg-primary-100 rounded-lg py-2 px-4 max-w-[80%]">
+                                    <p>Hello, I need to see a doctor for my headache.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="chat-message show flex justify-end mb-4">
+                                <div class="bg-primary-600 text-white rounded-lg py-2 px-4 max-w-[80%]">
+                                    <p>你好，我需要看医生治疗我的头痛。</p>
+                                </div>
+                            </div>
+                            
+                            <div class="chat-message show flex mb-4">
+                                <div class="bg-primary-100 rounded-lg py-2 px-4 max-w-[80%]">
+                                    <p>How long have you had the symptom?</p>
+                                </div>
+                            </div>
+                            
+                            <div class="chat-message show flex justify-end">
+                                <div class="bg-primary-600 text-white rounded-lg py-2 px-4 max-w-[80%]">
+                                    <p>你的症状持续多久了？</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex">
+                            <input type="text" id="chat-input" class="flex-1 border border-gray-300 rounded-l-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="Type your message...">
+                            <button id="send-message" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-r-md transition-colors">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="py-20 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">What Our Clients Say</h2>
+                <p class="text-secondary-600 max-w-2xl mx-auto">Hear from some of our international clients about their experience with our services.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Testimonial 1 -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <div class="flex text-yellow-400 mb-4">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <p class="text-secondary-600 mb-6">"CN-Hospital made my medical trip to China completely stress-free. The translator was professional and the driver was punctual. I highly recommend their services!"</p>
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-gray-200 rounded-full mr-4"></div>
+                        <div>
+                            <h4 class="font-medium">Sarah Johnson</h4>
+                            <p class="text-sm text-secondary-500">From United States</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Testimonial 2 -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <div class="flex text-yellow-400 mb-4">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <p class="text-secondary-600 mb-6">"The AI translation app was incredibly helpful during my hospital visits. It accurately translated all the medical terms, making communication with doctors seamless."</p>
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-gray-200 rounded-full mr-4"></div>
+                        <div>
+                            <h4 class="font-medium">Michael Kim</h4>
+                            <p class="text-sm text-secondary-500">From South Korea</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Testimonial 3 -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <div class="flex text-yellow-400 mb-4">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star-half-alt"></i>
+                    </div>
+                    <p class="text-secondary-600 mb-6">"Dr. Li was excellent and spoke perfect English. The medical escort service helped me navigate the hospital system, which would have been impossible on my own."</p>
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-gray-200 rounded-full mr-4"></div>
+                        <div>
+                            <h4 class="font-medium">David Wilson</h4>
+                            <p class="text-sm text-secondary-500">From United Kingdom</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+   <!-- Contact Section -->
+<section id="contact" class="py-20 bg-white">
+    <div class="container mx-auto px-4">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl md:text-4xl font-bold mb-4">Contact Us</h2>
+            <p class="text-secondary-600 max-w-2xl mx-auto">Have questions or need assistance? Our team is here to help you 24/7.</p>
+        </div>
+        
+        <div class="bg-white rounded-xl shadow-lg p-6 md:p-8 max-w-md mx-auto">
+            <h3 class="text-xl font-semibold mb-6">Cn-Hospital</h3>
+            
+            <div class="flex items-start">
+                <div class="bg-primary-100 w-10 h-10 rounded-full flex items-center justify-center mr-4 mt-1">
+                    <i class="fas fa-envelope text-primary-600"></i>
+                </div>
+                <div>
+                    <h4 class="font-medium mb-1">Email</h4>
+                    <p class="text-secondary-600">chinahospital001@163.com</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+    <!-- Footer -->
+    <footer class="bg-secondary-900 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-6">
+                        <i class="fas fa-heartbeat text-primary-400 text-2xl"></i>
+                        <span class="text-xl font-bold text-white">CN-Hospital</span>
+                    </div>
+                    <p class="text-gray-400 mb-6">Providing seamless healthcare services for foreigners in China since 2010.</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-weixin"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-weibo"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-semibold mb-6">Services</h4>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Airport Pickup</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Medical Translation</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Medical Escort</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Doctor Appointments</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Hotel Booking</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">AI Translation Assistant</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-semibold mb-6">Quick Links</h4>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Home</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">About Us</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Our Hospital</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">How It Works</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Testimonials</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Contact</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-semibold mb-6">Contact</h4>
+                    <ul class="space-y-3">
+                        <li class="flex items-start">
+                            <i class="fas fa-map-marker-alt mt-1 mr-3 text-primary-400"></i>
+                            <span class="text-gray-400"> Longgang, shenzhen, China</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-phone-alt mt-1 mr-3 text-primary-400"></i>
+                            <span class="text-gray-400">+86 10 ----------</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-envelope mt-1 mr-3 text-primary-400"></i>
+                            <span class="text-gray-400">chinahospital001@163.com</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 pt-8">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <p class="text-gray-400 mb-4 md:mb-0">&copy; 2025 CN-Hospital. All rights reserved.</p>
+                    <div class="flex space-x-6">
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">Privacy Policy</a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">Terms of Service</a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">Cookie Policy</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Back to Top Button -->
+    <button id="back-to-top" class="fixed bottom-8 right-8 bg-primary-600 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg opacity-0 invisible transition-all duration-300">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <!-- Scripts -->
+    <script>
+        // Mobile Menu Toggle
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            document.getElementById('mobile-menu').classList.add('open');
+        });
+        
+        document.getElementById('close-menu').addEventListener('click', function() {
+            document.getElementById('mobile-menu').classList.remove('open');
+        });
+        
+        // Mobile Menu Links Close Menu
+        document.querySelectorAll('#mobile-menu a').forEach(link => {
+            link.addEventListener('click', function() {
+                document.getElementById('mobile-menu').classList.remove('open');
+            });
+        });
+        
+        // Back to Top Button
+        const backToTopButton = document.getElementById('back-to-top');
+        
+        window.addEventListener('scroll', function() {
+            if (window.pageYOffset > 300) {
+                backToTopButton.classList.remove('opacity-0', 'invisible');
+                backToTopButton.classList.add('opacity-100', 'visible');
+            } else {
+                backToTopButton.classList.remove('opacity-100', 'visible');
+                backToTopButton.classList.add('opacity-0', 'invisible');
+            }
+        });
+        
+        backToTopButton.addEventListener('click', function() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+        
+        // Fade In Animation on Scroll
+        const fadeElements = document.querySelectorAll('.fade-in');
+        
+        const fadeInObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    fadeInObserver.unobserve(entry.target);
+                }
+            });
+        }, {
+            threshold: 0.1
+        });
+        
+        fadeElements.forEach(element => {
+            fadeInObserver.observe(element);
+        });
+        
+        // Booking Form Steps
+        const bookingSteps = document.querySelectorAll('.booking-step');
+        const formSteps = document.querySelectorAll('.booking-form-step');
+        const nextButtons = document.querySelectorAll('.next-step');
+        const prevButtons = document.querySelectorAll('.prev-step');
+        
+        let currentStep = 0;
+        
+        function updateBookingSteps() {
+            bookingSteps.forEach((step, index) => {
+                if (index < currentStep) {
+                    step.classList.add('completed');
+                    step.classList.remove('active');
+                } else if (index === currentStep) {
+                    step.classList.add('active');
+                    step.classList.remove('completed');
+                } else {
+                    step.classList.remove('active', 'completed');
+                }
+            });
+            
+            formSteps.forEach((step, index) => {
+                if (index === currentStep) {
+                    step.classList.remove('hidden');
+                } else {
+                    step.classList.add('hidden');
+                }
+            });
+            
+            // Update progress bars
+            const progressBars = document.querySelectorAll('.booking-step + .hidden + .booking-step .absolute');
+            progressBars.forEach((bar, index) => {
+                if (index < currentStep - 1) {
+                    bar.style.width = '100%';
+                } else if (index === currentStep - 1) {
+                    bar.style.width = '50%';
+                } else {
+                    bar.style.width = '0%';
+                }
+            });
+        }
+        
+        nextButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                if (currentStep < bookingSteps.length - 1) {
+                    currentStep++;
+                    updateBookingSteps();
+                }
+            });
+        });
+        
+        prevButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                if (currentStep > 0) {
+                    currentStep--;
+                    updateBookingSteps();
+                }
+            });
+        });
+        
+        // New Booking Button
+        document.getElementById('new-booking').addEventListener('click', function() {
+            currentStep = 0;
+            updateBookingSteps();
+            document.getElementById('booking-form').reset();
+        });
+        
+        // Service Checkboxes and Pricing
+        const serviceCheckboxes = document.querySelectorAll('#step-1 input[type="checkbox"]');
+        const servicesTotal = document.getElementById('services-total');
+        const serviceFee = document.getElementById('service-fee');
+        const totalAmount = document.getElementById('total-amount');
+        const confirmedServices = document.getElementById('confirmed-services');
+        const confirmedAmount = document.getElementById('confirmed-amount');
+        
+        const servicePrices = {
+            'airport-pickup': 100,
+            'medical-translation': 80,
+            'medical-escort': 150,
+            'doctor-appointment': 50,
+            'hotel-booking': 30,
+            'ai-assistant': 40
+        };
+        
+        function updatePrices() {
+            let subtotal = 0;
+            let selectedServices = [];
+            
+            serviceCheckboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    subtotal += servicePrices[checkbox.id];
+                    selectedServices.push(checkbox.nextElementSibling.textContent);
+                }
+            });
+            
+            const fee = subtotal > 0 ? 20 : 0;
+            const total = subtotal + fee;
+            
+            servicesTotal.textContent = `$${subtotal.toFixed(2)}`;
+            serviceFee.textContent = `$${fee.toFixed(2)}`;
+            totalAmount.textContent = `$${total.toFixed(2)}`;
+            
+            // Update confirmed services and amount
+            if (selectedServices.length > 0) {
+                confirmedServices.textContent = selectedServices.join(', ');
+            } else {
+                confirmedServices.textContent = 'No services selected';
+            }
+            confirmedAmount.textContent = `$${total.toFixed(2)}`;
+        }
+        
+        serviceCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', updatePrices);
+        });
+        
+        // AI Chat Functionality
+        const chatInput = document.getElementById('chat-input');
+        const sendButton = document.getElementById('send-message');
+        const chatContainer = document.querySelector('.chat-container');
+        
+        // Sample medical translations
+        const medicalTranslations = {
+            'headache': '头痛 (tóu tòng)',
+            'fever': '发烧 (fā shāo)',
+            'stomachache': '胃痛 (wèi tòng)',
+            'cough': '咳嗽 (ké sou)',
+            'cold': '感冒 (gǎn mào)',
+            'medicine': '药物 (yào wù)',
+            'prescription': '处方 (chǔ fāng)',
+            'treatment': '治疗 (zhì liáo)',
+            'doctor': '医生 (yī shēng)',
+            'hospital': '医院 (yī yuàn)'
+        };
+        
+        function addMessage(message, isUser = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('chat-message', 'flex', 'mb-4');
+            
+            if (isUser) {
+                messageDiv.classList.add('justify-end');
+                messageDiv.innerHTML = `
+                    <div class="bg-primary-100 rounded-lg py-2 px-4 max-w-[80%]">
+                        <p>${message}</p>
+                    </div>
+                `;
+            } else {
+                messageDiv.innerHTML = `
+                    <div class="bg-primary-600 text-white rounded-lg py-2 px-4 max-w-[80%]">
+                        <p>${message}</p>
+                    </div>
+                `;
+            }
+            
+            chatContainer.appendChild(messageDiv);
+            
+            // Animate message
+            setTimeout(() => {
+                messageDiv.classList.add('show');
+            }, 100);
+            
+            // Scroll to bottom
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+        
+        function getTranslation(message) {
+            // Simple translation logic for demo purposes
+            let translatedMessage = message;
+            
+            // Check for medical terms
+            for (const [term, translation] of Object.entries(medicalTranslations)) {
+                if (message.toLowerCase().includes(term)) {
+                    translatedMessage = message.replace(new RegExp(term, 'gi'), translation);
+                }
+            }
+            
+            // Add some common phrases
+            if (message.toLowerCase().includes('hello') || message.toLowerCase().includes('hi')) {
+                return '你好 (nǐ hǎo)';
+            } else if (message.toLowerCase().includes('thank you') || message.toLowerCase().includes('thanks')) {
+                return '谢谢 (xiè xie)';
+            } else if (message.toLowerCase().includes('how are you')) {
+                return '你好吗 (nǐ hǎo ma)';
+            } else if (message.toLowerCase().includes('i am') && message.toLowerCase().includes('sick')) {
+                return '我生病了 (wǒ shēng bìng le)';
+            }
+            
+            return translatedMessage;
+        }
+        
+        function handleSendMessage() {
+            const message = chatInput.value.trim();
+            
+            if (message) {
+                // Add user message
+                addMessage(message, true);
+                
+                // Clear input
+                chatInput.value = '';
+                
+                // Show typing indicator
+                const typingDiv = document.createElement('div');
+                typingDiv.classList.add('chat-message', 'flex', 'mb-4');
+                typingDiv.innerHTML = `
+                    <div class="bg-primary-600 text-white rounded-lg py-2 px-4">
+                        <div class="loading-dots flex space-x-1">
+                            <span class="w-2 h-2 bg-white rounded-full"></span>
+                            <span class="w-2 h-2 bg-white rounded-full"></span>
+                            <span class="w-2 h-2 bg-white rounded-full"></span>
+                        </div>
+                    </div>
+                `;
+                chatContainer.appendChild(typingDiv);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+                
+                // Simulate AI response after delay
+                setTimeout(() => {
+                    // Remove typing indicator
+                    chatContainer.removeChild(typingDiv);
+                    
+                    // Add AI response
+                    const translation = getTranslation(message);
+                    addMessage(translation);
+                }, 1000);
+            }
+        }
+        
+        sendButton.addEventListener('click', handleSendMessage);
+        
+        chatInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                handleSendMessage();
+            }
+        });
+        
+        // 3D Globe Animation with Three.js
+        function initGlobe() {
+            const container = document.getElementById('globe-container');
+            
+            // Create scene
+            const scene = new THREE.Scene();
+            
+            // Create camera
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 200;
+            
+            // Create renderer
+            const renderer = new THREE.WebGLRenderer({ alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            container.appendChild(renderer.domElement);
+            
+            // Create globe
+            const geometry = new THREE.SphereGeometry(100, 64, 64);
+            
+            // Create material with blue gradient
+            const material = new THREE.MeshBasicMaterial({
+                color: 0x0ea5e9,
+                wireframe: true,
+                transparent: true,
+                opacity: 0.3
+            });
+            
+            const globe = new THREE.Mesh(geometry, material);
+            scene.add(globe);
+            
+            // Create points on globe
+            const pointsGeometry = new THREE.BufferGeometry();
+            const pointsCount = 1000;
+            const positions = new Float32Array(pointsCount * 3);
+            
+            for (let i = 0; i < pointsCount; i++) {
+                const i3 = i * 3;
+                const radius = 100;
+                
+                // Random position on sphere
+                const phi = Math.acos(-1 + (2 * Math.random()));
+                const theta = 2 * Math.PI * Math.random();
+                
+                positions[i3] = radius * Math.sin(phi) * Math.cos(theta);
+                positions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+                positions[i3 + 2] = radius * Math.cos(phi);
+            }
+            
+            pointsGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            
+            const pointsMaterial = new THREE.PointsMaterial({
+                color: 0xffffff,
+                size: 1,
+                transparent: true,
+                opacity: 0.8
+            });
+            
+            const points = new THREE.Points(pointsGeometry, pointsMaterial);
+            scene.add(points);
+            
+            // Animation
+            function animate() {
+                requestAnimationFrame(animate);
+                
+                // Rotate globe
+                globe.rotation.y += 0.001;
+                points.rotation.y += 0.001;
+                
+                renderer.render(scene, camera);
+            }
+            
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+            
+            animate();
+        }
+        
+        // Initialize 3D globe when page loads
+        window.addEventListener('load', initGlobe);
+    </script>
+</body>
+</html>
